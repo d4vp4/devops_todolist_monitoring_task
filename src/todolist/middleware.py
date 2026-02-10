@@ -1,17 +1,23 @@
 import time
-from prometheus_client import Counter, Gauge
+from prometheus_client import Counter, Gauge  # <--- Додали Gauge
 
-class PrometheusMiddleware:
+REQUEST_COUNT = Counter('http_requests_total', 'Total HTTP Requests', ['method', 'endpoint', 'http_status'])
+
+start_time = Gauge('http_requests_created', 'Time when the metrics were created')
+start_time.set_to_current_time()
+
+class MetricsMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        # Лічильник запитів
-        self.request_counter = Counter('http_requests_total', 'Total HTTP Requests', ['method'])
-        # Метрика часу запуску (вимога ментора)
-        self.creation_time = Gauge('http_requests_total_created', 'Time when the counter was created')
-        self.creation_time.set(time.time())
 
     def __call__(self, request):
         response = self.get_response(request)
+
         if request.path != '/metrics':
-            self.request_counter.labels(method=request.method).inc()
+            REQUEST_COUNT.labels(
+                method=request.method,
+                endpoint=request.path,
+                http_status=response.status_code
+            ).inc()
+
         return response
