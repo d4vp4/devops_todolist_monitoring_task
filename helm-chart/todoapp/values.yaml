@@ -1,56 +1,110 @@
 namespace: todo-ns
 
+replicaCount: 1
+
 image:
   repository: ikulyk404/todoapp
-  tag: "5.0.0"
+  tag: "5.0.1"
+  pullPolicy: IfNotPresent
 
-replicas: 1
+nameOverride: ""
+fullnameOverride: ""
+
+env:
+  - name: SECRET_KEY
+    value: "django-insecure-key-12345"
+  - name: DB_HOST
+    value: "mysql"
+  - name: DB_PORT
+    value: "3306"
+  - name: DB_NAME
+    value: "todo_db"
+  - name: DB_USER
+    value: "root"
+  - name: DB_PASSWORD
+    value: "rootpassword"
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: "todoapp-sa"
+
+pv:
+  enabled: true
+  capacity: 1Gi
+  accessMode: ReadWriteOnce
+  path: "/mnt/data"
+  hostPath: "/mnt/data"
+
+pvc:
+  enabled: true
+  storage: 1Gi
+  accessMode: ReadWriteOnce
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+  name: http
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
 
 resources:
-  requests:
-    cpu: 100m
-    memory: 128Mi
   limits:
     cpu: 200m
     memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
 
+strategy:
+  type: RollingUpdate
 rollingUpdate:
-  maxSurge: 1
-  maxUnavailable: 0
+  maxSurge: 25%
+  maxUnavailable: 25%
 
 nodeAffinity:
-  key: "kubernetes.io/hostname"
+  key: "kubernetes.io/os"
+  operator: "In"
   values:
-    - "kind-worker2"
+    - linux
 
-hpa:
+autoscaling:
+  enabled: false
   minReplicas: 1
-  maxReplicas: 5
-  averageCpuUtilization: 50
-  averageMemoryUtilization: 80
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+  targetMemoryUtilizationPercentage: 50
 
-pv:
-  capacity: 1Gi
-  path: "/mnt/data"
-
-pvc:
-  storage: 1Gi
-
-serviceAccount:
-  name: todo-sa
-
-secrets:
-  DB_NAME: "todo_db"
-  DB_USER: "todo_user"
-  DB_PASSWORD: "securepassword"
-  DB_HOST: "mysql"
-  SECRET_KEY: "supersecretkey"
-
-mysql:
-  enabled: true
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
 
 serviceMonitor:
   enabled: true
   interval: 10s
   path: /metrics
-  labels: {}
+  port: http             
+  labels: 
+    release: prometheus-stack
+
+mysql:
+  enabled: true
+  auth:
+    rootPassword: "techtalentschool"
+    database: "todolist"
+  mysqlRootPassword: "techtalentschool"
+  mysqlDatabase: "todo_db"
+  rootPassword: "techtalentschool"
+  db:
+    name: "todolist"

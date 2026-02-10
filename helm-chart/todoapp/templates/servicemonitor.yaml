@@ -11,7 +11,7 @@ spec:
     matchLabels:
       app: {{ .Chart.Name }}
   endpoints:
-  - port: http
+  - port: {{ .Values.serviceMonitor.port }}
     path: {{ .Values.serviceMonitor.path }}
     interval: {{ .Values.serviceMonitor.interval }}
   namespaceSelector:
