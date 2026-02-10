@@ -1,5 +1,4 @@
 namespace: todo-ns
-
 replicaCount: 1
 
 image:
@@ -14,15 +13,16 @@ env:
   - name: SECRET_KEY
     value: "django-insecure-key-12345"
   - name: DB_HOST
-    value: "mysql"
+
+    value: "todoapp-mysql"
   - name: DB_PORT
     value: "3306"
   - name: DB_NAME
-    value: "todo_db"
+    value: "todolist"
   - name: DB_USER
     value: "root"
   - name: DB_PASSWORD
-    value: "rootpassword"
+    value: "techtalentschool"
 
 serviceAccount:
   create: true
@@ -94,8 +94,8 @@ serviceMonitor:
   enabled: true
   interval: 10s
   path: /metrics
-  port: http             
-  labels: 
+  port: http
+  labels:
     release: prometheus-stack
 
 mysql:
@@ -103,8 +103,3 @@ mysql:
   auth:
     rootPassword: "techtalentschool"
     database: "todolist"
-  mysqlRootPassword: "techtalentschool"
-  mysqlDatabase: "todo_db"
-  rootPassword: "techtalentschool"
-  db:
-    name: "todolist"

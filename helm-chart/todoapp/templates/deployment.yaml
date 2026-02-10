@@ -3,15 +3,18 @@ kind: Deployment
 metadata:
   name: {{ include "todoapp.fullname" . }}
   labels:
+    app: {{ .Chart.Name }}
     {{- include "todoapp.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
+      app: {{ .Chart.Name }}
       {{- include "todoapp.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
+        app: {{ .Chart.Name }}
         {{- include "todoapp.selectorLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ include "todoapp.serviceAccountName" . }}

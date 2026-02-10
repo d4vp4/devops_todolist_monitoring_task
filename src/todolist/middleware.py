@@ -1,19 +1,21 @@
 import time
-from prometheus_client import Counter, Gauge  # <--- Додали Gauge
+from prometheus_client import Counter, Histogram
 
-REQUEST_COUNT = Counter('http_requests_total', 'Total HTTP Requests', ['method', 'endpoint', 'http_status'])
+REQUEST_COUNT = Counter(
+    'http_requests_total',
+    'Total HTTP requests',
+    ['method', 'endpoint', 'http_status']
+)
 
-start_time = Gauge('http_requests_created', 'Time when the metrics were created')
-start_time.set_to_current_time()
-
-class MetricsMiddleware:
+class PrometheusMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
+
         response = self.get_response(request)
 
-        if request.path != '/metrics':
+        if request.method in ("GET", "POST"):
             REQUEST_COUNT.labels(
                 method=request.method,
                 endpoint=request.path,
